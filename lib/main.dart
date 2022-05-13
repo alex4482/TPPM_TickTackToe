@@ -1,36 +1,27 @@
+//import 'dart:html';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const TicTacToe());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class TicTacToe extends StatelessWidget {
+  const TicTacToe({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Tick Tack Toe',
+      theme: ThemeData(primarySwatch: Colors.red),
+      home: const HomePage(title: 'Play Tick Tack Toe'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key, required this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -44,31 +35,50 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class HomePageState extends State<HomePage> {
+  var board;
+  var painters;
+  bool xRound = true;
 
-  void _incrementCounter() {
+  HomePageState() {
+    painters = List.generate(3, (index) {
+      return List.generate(3, (index2) {
+        return TicTacToePainter(index * 3 + index2);
+      });
+    });
+
+    board = List.generate(3, (index) {
+      return List.generate(3, (index2) {
+        return CustomPaint(
+            painter: painters[index][index2],
+            child: TextButton(
+              child: Container(
+              ),
+              onPressed: () => onButtonPressed(index, index2),
+            )
+
+            //),)
+            );
+      });
+    });
+  }
+
+  void onButtonPressed(int row, int col) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      if(painters[row][col].drawX == null)
+      {
+        painters[row][col].drawX = xRound;
+        xRound = !xRound;
+      }
+     
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -76,40 +86,170 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
+        child: AspectRatio(
+            aspectRatio: 1,
+            child: FractionallySizedBox(
+                widthFactor: 0.8,
+                heightFactor: 0.8,
+                child: Container(
+                  color: Colors.red,
+                  child: Column(
+                    //crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: 
+                            Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: 
+                              [
+                              Expanded(
+                              flex: 1,
+                              child: board[0][0]),
+                              Expanded(
+                              flex: 1,
+                              child: board[0][1]),
+                              Expanded(
+                              flex: 1,
+                              child: board[0][2])
+                            ],
+                          ),
+                        
+                      ),
+                      Expanded(
+                        flex: 4,
+                        child: 
+
+                            Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: 
+                              [
+                              Expanded(
+                              flex: 1,
+                              child: board[1][0]),
+                              Expanded(
+                              flex: 1,
+                              child: board[1][1]),
+                              Expanded(
+                              flex: 1,
+                              child: board[1][2])
+                            ],
+                          ),
+                        
+                      ),
+                      Expanded(
+                        flex: 4,
+                        child: 
+ 
+                            Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: 
+                            [
+                              Expanded(
+                              flex: 4,
+                              child: board[2][0]),
+                              Expanded(
+                              flex: 4,
+                              child: board[2][1]),
+                              Expanded(
+                              flex: 4,
+                              child: board[2][2])
+                            ]
+                              ,
+                          ),
+                        ),
+                      
+                    ],
+                  ),
+                  /*Column(
+                // Column is also a layout widget. It takes a list of children and
+                // arranges them vertically. By default, it sizes itself to fit its
+                // children horizontally, and tries to be as tall as its parent.
+                //
+                // Invoke "debug painting" (press "p" in the console, choose the
+                // "Toggle Debug Paint" action from the Flutter Inspector in Android
+                // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+                // to see the wireframe for each widget.
+                //
+                // Column has various properties to control how it sizes itself and
+                // how it positions its children. Here we use mainAxisAlignment to
+                // center the children vertically; the main axis here is the vertical
+                // axis because Columns are vertical (the cross axis would be
+                // horizontal).
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const Text(
+                    'You have pushed the button this many times:',
+                  ),
+                  Text(
+                    '$_counter',
+                    style: Theme.of(context).textTheme.headline4,
+                  ),
+                ],
+              ),*/
+                ))),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+}
+
+class TicTacToePainter extends CustomPainter {
+  int ownBoardPlace;
+  bool? drawX;
+  double parentSizeMaxFill = 0.8;
+  double strokesThickness = 10;
+
+  TicTacToePainter(this.ownBoardPlace);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (drawX != null) {
+      if (drawX == true) {
+        paintX(canvas, size);
+      } else {
+        paintO(canvas, size);
+      }
+    }
+  }
+
+  void paintO(Canvas canvas, Size size) {
+    Color oColor = Colors.blue;
+    Offset center = Offset(size.width / 2, size.height / 2);
+    Paint paint = Paint()
+      ..color = oColor
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = strokesThickness;
+    canvas.drawCircle(center, size.width * parentSizeMaxFill / 2, paint);
+  }
+
+  void paintX(Canvas canvas, Size size) {
+    Color xColor = Colors.yellow;
+    Offset topLeft = Offset(
+      size.width * parentSizeMaxFill, 
+      size.height - size.height * parentSizeMaxFill);
+    Offset topRight = Offset(
+      size.width - size.width * parentSizeMaxFill, 
+      size.height - size.height * parentSizeMaxFill);
+    Offset bottomLeft = Offset(
+      size.width * parentSizeMaxFill, 
+      size.height * parentSizeMaxFill);
+    Offset bottomRight = Offset(
+      size.width - size.width * parentSizeMaxFill, 
+      size.height * parentSizeMaxFill);
+
+    Paint paint = Paint()
+      ..color = xColor
+      ..style = PaintingStyle.fill
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = strokesThickness;
+    canvas.drawLine(topLeft, bottomRight, paint);
+    canvas.drawLine(topRight, bottomLeft, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return drawX != null;
   }
 }
