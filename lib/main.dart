@@ -15,35 +15,42 @@ class TicTacToe extends StatelessWidget {
     return MaterialApp(
       title: 'Tick Tack Toe',
       theme: ThemeData(primarySwatch: Colors.red),
-      home: const HomePage(title: 'Play Tick Tack Toe'),
+      home: const TicTacToeHomePage(title: 'Play Tick Tack Toe'),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+class TicTacToeHomePage extends StatefulWidget {
+  const TicTacToeHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
   @override
-  State<HomePage> createState() => HomePageState();
+  State<TicTacToeHomePage> createState() => TicTacToeState();
 }
 
-class HomePageState extends State<HomePage> {
+class TicTacToeState extends State<TicTacToeHomePage> {
   var board;
   var painters;
   bool xRound = true;
+  bool playAgainstAi = false;
+  bool aiStarts = true;
+  bool isGameOver = false;
 
-  HomePageState() {
+  var isSelected = [true, false];
+
+  Offset? finishLineOffset1;
+  Offset? finishLineOffset2;
+
+  TicTacToeState() {
+    refreshBoard();
+  }
+
+  void refreshBoard()
+  {
+    isGameOver = false;
+    xRound = true;
+
     painters = List.generate(3, (index) {
       return List.generate(3, (index2) {
         return TicTacToePainter(index * 3 + index2);
@@ -64,35 +71,185 @@ class HomePageState extends State<HomePage> {
             );
       });
     });
+  
+    if(playAgainstAi && aiStarts)
+    {
+      doAiMove();
+    }
   }
 
   void onButtonPressed(int row, int col) {
     setState(() {
-      if(painters[row][col].drawX == null)
+      if(!isGameOver && painters[row][col].drawX == null)
       {
         painters[row][col].drawX = xRound;
-        xRound = !xRound;
+
+        if(!playAgainstAi)
+        {
+          xRound = !xRound;
+        }
+
+        checkGameOver();
       }
      
     });
+  }
+
+  void checkGameOver()
+  {
+    setState(() {
+    for(int i = 0; i < 3; i++)
+    {
+      if(painters[i][0].drawX == painters[i][1].drawX && painters[i][0].drawX == painters[i][2].drawX && painters[i][0].drawX != null)
+      {
+        isGameOver = true;
+        finishLineOffset1 = Offset(i.toDouble(), 0);
+        finishLineOffset2 = Offset(i.toDouble(), 2);    
+        return;
+      }
+
+      if(painters[0][i].drawX == painters[1][i].drawX && painters[0][i].drawX == painters[2][i].drawX && painters[0][i].drawX != null)
+      {
+        isGameOver = true;
+        finishLineOffset1 = Offset(0, i.toDouble());
+        finishLineOffset2 = Offset(2, i.toDouble());    
+        return;
+      }
+    }
+
+    if(painters[0][0].drawX == painters[1][1].drawX && painters[0][0].drawX == painters[2][2].drawX && painters[0][0].drawX != null)
+    {
+      isGameOver = true;
+      finishLineOffset1 = const Offset(0, 0);
+      finishLineOffset2 = const Offset(2, 2);
+      return;
+    }
+
+    if(painters[0][2].drawX == painters[1][1].drawX && painters[0][2].drawX == painters[2][0].drawX && painters[0][2].drawX != null)
+    {
+      isGameOver = true;
+      finishLineOffset1 = const Offset(0, 2);
+      finishLineOffset2 = const Offset(2, 0);
+      return;
+    }
+    }); 
+  }
+
+  void onResetButtonClick(){
+    setState(() {
+      refreshBoard();
+
+      if(playAgainstAi && aiStarts)
+      {
+          doAiMove();
+      }
+    });
+  }
+
+  void doAiMove()
+  {
+//foloseste !xRound ca sa desenezi ce face Ai
+  }
+
+  void onPlayAgainstPlayerButtonClick(){
+    setState(() {
+      playAgainstAi = false;
+      refreshBoard();  
+    });
+    
+  }
+
+  void onPlayAgainstAiButtonClick(){
+    setState(() {
+      playAgainstAi = true;
+      refreshBoard();  
+    });
+    
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
-      ),
+        actions: [
+          ToggleButtons(children: const [
+            Text("First",
+              style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14)),
+            Text("Second",
+              style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14))
+          ],
+          isSelected: isSelected,
+          onPressed: (int index){
+            setState(() {
+              isSelected[index] = !isSelected[index];
+              if(index == 0)
+              {
+                aiStarts = false;
+              }
+              else
+              {
+                aiStarts = true;
+              }
+              refreshBoard();
+            });
+          },
+          )
+          ,
+          Container(
+            margin: const EdgeInsets.all(5),
+            child: ElevatedButton(
+              onPressed: onResetButtonClick,
+              child: const Text(
+                "Reset board",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18),
+                
+                ),
+              ),
+          ),
+          Container(
+            margin: const EdgeInsets.all(5),
+            child: ElevatedButton(
+              onPressed: onPlayAgainstAiButtonClick,
+              child: const Text(
+                "Play against AI",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18),
+                
+                ),
+              ),
+          ),
+          Container(
+            margin: const EdgeInsets.all(5),
+            child: ElevatedButton(
+              onPressed: onPlayAgainstPlayerButtonClick,
+              child: const Text(
+                "Play against player",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18),
+                
+                ),
+              ),
+          ),
+        ],
+      
+        ),
       body: Center(
         child: AspectRatio(
             aspectRatio: 1,
             child: FractionallySizedBox(
                 widthFactor: 0.8,
                 heightFactor: 0.8,
-                child: Container(
-                  color: Colors.red,
+                child: CustomPaint(
+                  painter: TicTacToeBoardPainter(this),
                   child: Column(
                     //crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -162,36 +319,103 @@ class HomePageState extends State<HomePage> {
                       
                     ],
                   ),
-                  /*Column(
-                // Column is also a layout widget. It takes a list of children and
-                // arranges them vertically. By default, it sizes itself to fit its
-                // children horizontally, and tries to be as tall as its parent.
-                //
-                // Invoke "debug painting" (press "p" in the console, choose the
-                // "Toggle Debug Paint" action from the Flutter Inspector in Android
-                // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-                // to see the wireframe for each widget.
-                //
-                // Column has various properties to control how it sizes itself and
-                // how it positions its children. Here we use mainAxisAlignment to
-                // center the children vertically; the main axis here is the vertical
-                // axis because Columns are vertical (the cross axis would be
-                // horizontal).
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Text(
-                    'You have pushed the button this many times:',
-                  ),
-                  Text(
-                    '$_counter',
-                    style: Theme.of(context).textTheme.headline4,
-                  ),
-                ],
-              ),*/
+                 
                 ))),
       ),
     );
   }
+}
+
+
+class TicTacToeBoardPainter extends CustomPainter{
+
+  Color boardBackgroundColor = Colors.black;
+  Color boardInnerStrokesColor = Colors.orange;
+  double strokeThickness = 10;
+
+  TicTacToeState game;
+  double strokesThickness = 10;
+
+  Color endLineColor = Colors.purple;
+
+  TicTacToeBoardPainter(this.game);
+
+  @override
+  void paint(Canvas canvas, Size size){
+  Paint paintBorder = Paint()
+    ..color = boardBackgroundColor
+    ..style = PaintingStyle.stroke
+    ..strokeCap = StrokeCap.round
+    ..strokeWidth = strokeThickness;
+
+  Offset topLeft = const Offset(0, 0);
+  Offset topRight = Offset( size.width, 0);
+  Offset bottomLeft = Offset(0, size.height);
+  Offset bottomRight = Offset(size.width, size.height);
+
+  canvas.drawLine(topLeft, topRight, paintBorder);
+  canvas.drawLine(topLeft, bottomLeft, paintBorder);
+  canvas.drawLine(bottomLeft, bottomRight, paintBorder);
+  canvas.drawLine(bottomRight, topRight, paintBorder);
+    
+  Paint paintInnerStrokes = Paint()
+    ..color = boardInnerStrokesColor
+    ..style = PaintingStyle.stroke
+    ..strokeCap = StrokeCap.round
+    ..strokeWidth = strokeThickness;
+
+  Offset p11 = Offset(size.width / 3, 0);
+  Offset p12 = Offset(size.width * 2 / 3, 0);
+
+  Offset p21 = Offset(0, size.height / 3);
+  //Offset p21 = Offset(size.width / 3, size.height / 3);
+  //Offset p22 = Offset(size.width * 2 /3, size.height / 3);
+  Offset p22 = Offset(size.width, size.height / 3);
+
+  Offset p31 = Offset(0, size.height * 2 / 3);
+  //Offset p31 = Offset(size.width / 3, size.height * 2 / 3);
+  //Offset p32 = Offset(size.width * 2 / 3, size.height * 2 / 3);
+  Offset p32 = Offset(size.width, size.height * 2 / 3);
+
+  Offset p41 = Offset(size.width / 3, size.height);
+  Offset p42 = Offset(size.width * 2 / 3, size.height);
+
+  canvas.drawLine(p11, p41, paintInnerStrokes);
+  canvas.drawLine(p12, p42, paintInnerStrokes);
+  canvas.drawLine(p21, p22, paintInnerStrokes);
+  canvas.drawLine(p31, p32, paintInnerStrokes);
+
+    if(game.isGameOver)
+    {
+      paintEndLine(canvas, size);
+    }
+  }
+
+  @override 
+  bool shouldRepaint(CustomPainter oldDelegate){
+    return game.isGameOver;
+  }
+
+  
+void paintEndLine(Canvas canvas, Size size){
+    Paint paint = Paint()
+      ..color = endLineColor
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = strokesThickness;
+
+    Offset p1 = Offset (
+      size.width * game.finishLineOffset1!.dx / 3, 
+      size.height * game.finishLineOffset1!.dx / 3
+      );
+    Offset p2 = Offset (
+      size.width * game.finishLineOffset2!.dx / 3, 
+      size.height * game.finishLineOffset2!.dx / 3
+      );
+    canvas.drawLine( p1, p2, paint);
+  }
+
+
 }
 
 class TicTacToePainter extends CustomPainter {
@@ -200,10 +424,15 @@ class TicTacToePainter extends CustomPainter {
   double parentSizeMaxFill = 0.8;
   double strokesThickness = 10;
 
+  Color oColor = Colors.blue;
+  Color xColor = Colors.yellow;  
+
   TicTacToePainter(this.ownBoardPlace);
 
   @override
   void paint(Canvas canvas, Size size) {
+
+
     if (drawX != null) {
       if (drawX == true) {
         paintX(canvas, size);
@@ -214,7 +443,7 @@ class TicTacToePainter extends CustomPainter {
   }
 
   void paintO(Canvas canvas, Size size) {
-    Color oColor = Colors.blue;
+    
     Offset center = Offset(size.width / 2, size.height / 2);
     Paint paint = Paint()
       ..color = oColor
@@ -225,7 +454,7 @@ class TicTacToePainter extends CustomPainter {
   }
 
   void paintX(Canvas canvas, Size size) {
-    Color xColor = Colors.yellow;
+    
     Offset topLeft = Offset(
       size.width * parentSizeMaxFill, 
       size.height - size.height * parentSizeMaxFill);
