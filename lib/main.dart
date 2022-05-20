@@ -1,4 +1,5 @@
-//import 'dart:html';
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -14,8 +15,7 @@ class TicTacToe extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Tick Tack Toe',
-      theme: ThemeData(primarySwatch: Colors.red),
-      home: const TicTacToeHomePage(title: 'Play Tick Tack Toe'),
+      home: const TicTacToeHomePage(title: 'Play Tic Tac Toe'),
     );
   }
 }
@@ -36,14 +36,22 @@ class TicTacToeState extends State<TicTacToeHomePage> {
   bool playAgainstAi = false;
   bool aiStarts = true;
   bool isGameOver = false;
+  bool horizontalFinishLine = false;
+  bool verticalFinishLine = false;
 
-  var isSelected = [true, false];
+  List<bool> isSelected = [true, false];
 
   Offset? finishLineOffset1;
   Offset? finishLineOffset2;
 
+  bool showTurnPickButtons = false;
+
   TicTacToeState() {
+    
+    
+
     refreshBoard();
+
   }
 
   void refreshBoard()
@@ -103,6 +111,8 @@ class TicTacToeState extends State<TicTacToeHomePage> {
       if(painters[i][0].drawX == painters[i][1].drawX && painters[i][0].drawX == painters[i][2].drawX && painters[i][0].drawX != null)
       {
         isGameOver = true;
+        verticalFinishLine = false;
+        horizontalFinishLine = true;
         finishLineOffset1 = Offset(i.toDouble(), 0);
         finishLineOffset2 = Offset(i.toDouble(), 2);    
         return;
@@ -111,6 +121,8 @@ class TicTacToeState extends State<TicTacToeHomePage> {
       if(painters[0][i].drawX == painters[1][i].drawX && painters[0][i].drawX == painters[2][i].drawX && painters[0][i].drawX != null)
       {
         isGameOver = true;
+        verticalFinishLine = true;
+        horizontalFinishLine = false;
         finishLineOffset1 = Offset(0, i.toDouble());
         finishLineOffset2 = Offset(2, i.toDouble());    
         return;
@@ -120,6 +132,8 @@ class TicTacToeState extends State<TicTacToeHomePage> {
     if(painters[0][0].drawX == painters[1][1].drawX && painters[0][0].drawX == painters[2][2].drawX && painters[0][0].drawX != null)
     {
       isGameOver = true;
+      verticalFinishLine = false;
+      horizontalFinishLine = false;
       finishLineOffset1 = const Offset(0, 0);
       finishLineOffset2 = const Offset(2, 2);
       return;
@@ -148,11 +162,14 @@ class TicTacToeState extends State<TicTacToeHomePage> {
 
   void doAiMove()
   {
-//foloseste !xRound ca sa desenezi ce face Ai
+    //foloseste !xRound ca sa desenezi ce face Ai
   }
 
   void onPlayAgainstPlayerButtonClick(){
     setState(() {
+
+      showTurnPickButtons = false;
+
       playAgainstAi = false;
       refreshBoard();  
     });
@@ -161,6 +178,9 @@ class TicTacToeState extends State<TicTacToeHomePage> {
 
   void onPlayAgainstAiButtonClick(){
     setState(() {
+      showTurnPickButtons = true;
+      
+
       playAgainstAi = true;
       refreshBoard();  
     });
@@ -169,13 +189,11 @@ class TicTacToeState extends State<TicTacToeHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: [
-          ToggleButtons(children: const [
+    Widget firstSecondButtons = ToggleButtons(
+      fillColor: Colors.yellow,
+      children: const [
             Text("First",
-              style: TextStyle(
+              style: TextStyle(           
                     color: Colors.white,
                     fontSize: 14)),
             Text("Second",
@@ -186,7 +204,11 @@ class TicTacToeState extends State<TicTacToeHomePage> {
           isSelected: isSelected,
           onPressed: (int index){
             setState(() {
-              isSelected[index] = !isSelected[index];
+
+              isSelected[index] = true;
+              isSelected[1- index] = false;
+              
+
               if(index == 0)
               {
                 aiStarts = false;
@@ -198,12 +220,17 @@ class TicTacToeState extends State<TicTacToeHomePage> {
               refreshBoard();
             });
           },
-          )
-          ,
+          );
+
+    List<Widget> appBarActions = [
+          
           Container(
             margin: const EdgeInsets.all(5),
             child: ElevatedButton(
               onPressed: onResetButtonClick,
+              style: ElevatedButton.styleFrom(
+                    primary: Colors.deepOrange, // Background color
+                  ),
               child: const Text(
                 "Reset board",
                 style: TextStyle(
@@ -215,8 +242,13 @@ class TicTacToeState extends State<TicTacToeHomePage> {
           ),
           Container(
             margin: const EdgeInsets.all(5),
+            color: Colors.deepOrange,
             child: ElevatedButton(
+              
               onPressed: onPlayAgainstAiButtonClick,
+              style: ElevatedButton.styleFrom(
+                    primary: Colors.deepOrange, // Background color
+                  ),
               child: const Text(
                 "Play against AI",
                 style: TextStyle(
@@ -228,8 +260,12 @@ class TicTacToeState extends State<TicTacToeHomePage> {
           ),
           Container(
             margin: const EdgeInsets.all(5),
+            color: Colors.deepOrange,
             child: ElevatedButton(
               onPressed: onPlayAgainstPlayerButtonClick,
+              style: ElevatedButton.styleFrom(
+                    primary: Colors.deepOrange, // Background color
+                  ),
               child: const Text(
                 "Play against player",
                 style: TextStyle(
@@ -239,7 +275,18 @@ class TicTacToeState extends State<TicTacToeHomePage> {
                 ),
               ),
           ),
-        ],
+        ];
+
+        if(showTurnPickButtons)
+        {
+          appBarActions.insert(0, firstSecondButtons);
+        }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: appBarActions,
+        backgroundColor: Colors.red,
       
         ),
       body: Center(
@@ -249,7 +296,7 @@ class TicTacToeState extends State<TicTacToeHomePage> {
                 widthFactor: 0.8,
                 heightFactor: 0.8,
                 child: CustomPaint(
-                  painter: TicTacToeBoardPainter(this),
+                  foregroundPainter: TicTacToeBoardPainter(this),
                   child: Column(
                     //crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -404,14 +451,37 @@ void paintEndLine(Canvas canvas, Size size){
       ..strokeCap = StrokeCap.round
       ..strokeWidth = strokesThickness;
 
+    double widthAddition1 = 0, heightAddition1 = 0;
+    double widthAddition2 = 0, heightAddition2 = 0;
+
+    if(game.horizontalFinishLine)
+    {
+      widthAddition2 = size.width / 3;
+
+      heightAddition1 = size.height / 6;
+      heightAddition2 = size.height / 6;
+    }
+    else if(game.verticalFinishLine)
+    {
+      widthAddition1 = size.width / 6;
+      widthAddition2 = widthAddition1;
+
+      heightAddition2 = size.height / 3;
+    }
+    else {
+      widthAddition2 = size.width / 3;
+      heightAddition2 = size.height / 3;
+    }
+
     Offset p1 = Offset (
-      size.width * game.finishLineOffset1!.dx / 3, 
-      size.height * game.finishLineOffset1!.dx / 3
+      size.width * game.finishLineOffset1!.dy / 3 + widthAddition1, 
+      size.height * game.finishLineOffset1!.dx / 3 + heightAddition1
       );
     Offset p2 = Offset (
-      size.width * game.finishLineOffset2!.dx / 3, 
-      size.height * game.finishLineOffset2!.dx / 3
+      size.width * game.finishLineOffset2!.dy / 3 + widthAddition2, 
+      size.height * game.finishLineOffset2!.dx / 3 + heightAddition2
       );
+
     canvas.drawLine( p1, p2, paint);
   }
 
